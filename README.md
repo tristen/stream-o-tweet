@@ -8,8 +8,8 @@ Drawing heavily from examples in the wild, this streams a tweet using socket.io 
 - [node-twitter](https://github.com/technoweenie/twitter-node)
 
 __Install them using [npm](https://github.com/isaacs/npm) !__
-  <code>npm install twitter-node
-        npm install socket.io</code>
+  <code>npm install twitter-node</code>
+  <code>npm install socket.io</code>
 
 server.js makes the assumption you are storing your modules from:
   <code>/usr/local/lib/node</code>
