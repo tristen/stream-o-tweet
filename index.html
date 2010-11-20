@@ -17,8 +17,12 @@
         color: #fff;
         font-weight: normal;
       }
-      a { outline: 0; }
-      
+      a { 
+        outline: 0; 
+        text-decoration: none;
+        color: #c4193c;
+        font-weight: bold;
+        }
       /* Sorry accessibility ...*/
       button::-moz-focus-inner,
       input[type="reset"]::-moz-focus-inner,
@@ -90,6 +94,7 @@
       #content {
         float: left;
         width: 665px;
+        margin-bottom: 25px;
       }
       #page {
         font-family: "Century Schoolbook",Century,Palatino,Georgia,serif;
@@ -118,6 +123,10 @@
         line-height:22px;
         margin:8px 0;
         padding:5px 30px;
+        overflow: auto;
+      }
+      #page ul li:last-child {
+        border-bottom: none;
       }
       #growl{
         background: rgba(0, 0, 0, 0.85);
@@ -133,37 +142,45 @@
         height: 75px;
         padding: 20px;
       }
+      img.profile{
+        border:4px solid #D2E2EA;
+        float:left;
+        height:48px;
+        margin-bottom:6px;
+        margin-right:12px;
+        width:48px;
+      }
     </style>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"></script>
     <script src="http://cdn.socket.io/stable/socket.io.js"></script>
     <script>
-      $(function () {        
+      $(function () {
+        var tweetVal;
+             
         $('form#form').submit(function () {
           tweetVal = $('#text').val();
-          
-          // TODO: Send value to server to swap profile name
-          socket.send(tweetVal);
+          sendProfile();
           return false;
         });
         
+        function sendProfile() {
+          $.getJSON("/stream", function (message) {
+            alert(message);
+          });
+        }
+        
         function update() {
           $('#growl').fadeOut('slow');
-          // TODO: Broadcast new profile name from #growl
         }
-        var tweets = $("#tweets");
+        var socket = new io.Socket(),
+            tweets = $("#tweets");
         
-        var socket = new io.Socket();
         socket.connect();
         socket.on('message', function (tweet) {
-          var tweetLi = $("<li/>").html(tweet.text);
+          var url = '<a target="_blank" href="http://twitter.com/' + tweet.user.screen_name + '">';
+          var tweetLi = $("<li/>").html(url + '<img class="profile" src="' + tweet.user.profile_image_url + '" /></a>' + url + '@' + tweet.user.screen_name + '</a> ' + tweet.text);
           tweets.prepend(tweetLi);
-          
-          if ('buffer' in tweet){
-            // TODO: Fix Buffer
-            setInterval(update, 1500);
-          } else {
-            setInterval(update, 1500);
-          }
+          setInterval(update, 1500);
         });
       });  
     </script>

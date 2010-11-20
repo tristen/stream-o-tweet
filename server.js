@@ -2,14 +2,22 @@
 require.paths.unshift('/usr/local/lib/node');
 
 var http = require('http'),
-    fs = require('fs'),
-    url = require('url'),
     sys = require('sys'),
+    fs = require('fs'),
     TwitterNode = require('twitter-node').TwitterNode,
     io = require('socket.io');
+    
+// Command line args
+var USERNAME = process.ARGV[2];
+var PASSWORD = process.ARGV[3];
+
+if (!USERNAME || !PASSWORD)
+  return sys.puts("To use, enter the following: node server.js <twitter_username> <twitter_password>");
 
 // 1. HTTP server
 var server = http.createServer(function (req, res) {
+  // var uri = url.parse(req.url).pathname;
+  
   res.writeHead(200, {'Content-Type': 'text/html'});
   fs.readFile("index.html", function (err, data) {
     if (err) throw err;
@@ -17,31 +25,20 @@ var server = http.createServer(function (req, res) {
     res.end();
   });
 });
-server.listen(4000);
-console.log('Server has started on port 4000');
 
-var twit = new TwitterNode({user: 'your user name', password: 'your password'}),
-    io = io.listen(server),
-    buffer = [];
+server.listen(4000);
+console.log('Server has started on port http://localhost:4000');
+
+var twit = new TwitterNode({user: USERNAME, password: PASSWORD}),
+    io = io.listen(server);
 
 // 2. socket.io
 io.on('connection', function (client) {
-  client.send({ buffer: buffer });
-  client.broadcast({ announcement: client.sessionId + ' connected' });
-
   // Send the tweet objects directly to the client.
   var tweetReceived = function (tweet) {
     client.send(tweet);
   };
   twit.addListener('tweet', tweetReceived);
-
-  // Let's send stuff to the client
-  // Missing something here ..
-  client.on('message', function (message){
-    var msg = { message: [client.sessionId, message] };
-    buffer.push(msg);
-    client.broadcast(msg);
-  });
 
   client.on('disconnect', function () {
     twit.removeListener('tweet', tweetReceived);
@@ -50,12 +47,12 @@ io.on('connection', function (client) {
 });
 
 // 3. Twitter client.
-twit.track('obama'); // Track user TODO: Replace with argument
+twit.track('obama');
 twit.addListener('error', function (err) { 
   console.log(err.message); // Log any error
 });
 twit.addListener('tweet', function (tweet) { 
-  console.log("Tweet received: " + tweet.id_str); // Log responses
+  sys.puts("@" + tweet.user.screen_name + ": " + tweet.text);  // Log any tweet to terminal
 });
 
 // Start'er up.
