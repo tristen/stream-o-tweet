@@ -1,6 +1,3 @@
-// Dependencies
-require.paths.unshift('/usr/local/lib/node');
-
 var http = require('http'),
     sys = require('sys'),
     fs = require('fs'),
